@@ -1,0 +1,69 @@
+<!-- HTML Boiler -->
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<title>dataLayer</title>
+
+		<style>
+			div {
+				padding: 100px;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div>
+			<h3>Push "detect" Event to dataLayer</h3>
+			<button onclick="dataLayer.push({'event': 'detect', 'data': 'test'});">Detect</button>
+		</div>
+
+		<div>
+			<h3>Push "no detect" Event to dataLayer</h3>
+			<button onclick="dataLayer.push({'event': 'no_detect'});">No Detect</button>
+		</div>
+	</body>
+
+	<script>
+		// Define a dataLayer object, which is used to store and manage information for a website or application.
+		const dataLayer = window.dataLayer || [];
+
+		// Create a new push method on the dataLayer object that extends its functionality to dispatch a custom event.
+		(function () {
+			// Capture the original push method.
+			const originalPush = dataLayer.push.bind(dataLayer);
+
+			// Replace the original push method with a new one that dispatches a custom event.
+			dataLayer.push = function (obj) {
+				// Call the original push method.
+				originalPush(obj);
+
+				// Dispatch a new custom event named "dataLayer.push" with the obj argument as the detail property of the event.
+				window.dispatchEvent(new CustomEvent("dataLayer.push", { detail: obj }));
+			};
+		})();
+
+		// Define a custom function for adding event triggers to the dataLayer object.
+		function addDataLayerEventTrigger(event_name, callback) {
+			// Check that the event_name parameter is a string and the callback parameter is a function.
+			if (typeof event_name !== "string" || typeof callback !== "function") {
+				console.error("Invalid arguments provided for addDataLayerEventTrigger");
+				return;
+			}
+
+			// Add an event listener to the window object that listens for the "dataLayer.push" event.
+			window.addEventListener("dataLayer.push", (event) => {
+				// Check if the event_name parameter matches the "event" property of the detail object.
+				if (event.detail && event.detail.event === event_name) {
+					// Call the callback function and pass the detail object as an argument.
+					callback(event.detail);
+				}
+			});
+		}
+
+		addDataLayerEventTrigger("detect", (event) => {
+			console.log("detect event detected");
+			console.log(event);
+		});
+	</script>
+</html>
